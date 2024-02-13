@@ -1,0 +1,144 @@
+Web VPython 3.2
+v0 = 0
+gravity = "10"
+deg = 0
+s = "-"
+time = 10000000
+winVe = winput(bind=startVelosity, prompt='начальная скорость, м/с', type='numeric')
+winDeg = winput(bind=startDeg, prompt='угол к горизонту', type='numeric')
+folowChek = checkbox(bind=itFolow, text = 'следовать за телом?')
+
+def startVelosity(evt):
+    global v0
+    v0 = evt.number
+
+def startDeg(evt):
+    global deg
+    deg = (evt.number/180)*pi
+
+def itFolow(evt):
+    if evt.checked:
+        scene.camera.follow(sph)
+    else:
+        scene.camera.follow(None)
+    
+scene.width = 2000
+scene.height = 750
+sph = sphere(color=color.red, pos=vector(-10, 0, 0), make_trail=True, trail_type="points",
+              interval=5, retain=30, size=vector(2,2,2))
+pY = sph.pos.y
+
+scene.camera.pos = vector(0, 20, 50)
+
+def Planet(m):
+    global gravity
+    val = m.selected
+    if val == "Земля":
+        gravity = "10"
+    elif val == "Марс":
+        gravity = "4"
+    elif val == "Юпитер":
+        gravity = "26"
+    elif val == "Солнце":
+        gravity = "274"
+
+mybox = box(pos=vector(0,-1,0),size=vector(scene.width * 2,0.5,scene.width * 2) )
+
+menu(choices=[ 'Выберите планету','Земля', 'Марс', 'Юпитер', 'Солнце'], index=0, bind=Planet)
+scene.append_to_caption('\n')
+
+g1 = graph(title=s, xtitle='время, с', ytitle='перемещение, м', fast=False, width=800)
+g2 = graph(title=s, xtitle='время, с', ytitle='скорость, м/с', fast=False, width=800)
+g3 = graph(title=s, xtitle='время, с', ytitle='энергия', fast=False, width=800)
+
+A = vertex(pos=vector(-scene.width * 2, -0.5, scene.width * 2))
+B = vertex(pos=vector(scene.width * 2, -0.5, scene.width * 2))
+D = vertex(pos=vector(-scene.width * 2, -0.5, -scene.width * 2))
+C = vertex(pos=vector(scene.width * 2, -0.5, -scene.width * 2))
+Q = quad(vs=[A, B, C, D])
+
+sph.mass = 1.0
+
+
+
+
+
+strBtn = button( text = 'Start', bind = start)
+fCount = 0
+
+
+#ev = scene.waitfor('click keydown')
+#if ev.event == 'click':
+def start(evt):
+    global fCount
+    fCount += 1
+    strBtn.text = 'Stop'
+    
+    global gravity
+    axe = int(gravity)
+    #scene.camera.follow(sph)
+    if s == "-":
+        sec = 0
+        
+        f1 = gcurve(color=color.cyan, graph=g1, label='OX')
+        f6 = gcurve(color=color.green, graph=g1, label='OY')
+        f2 = gcurve(color=color.red, graph=g2)
+        f3 = gcurve(color=color.green, graph=g2)
+        f4 = gcurve(color=color.blue, graph=g3, label='кинетическая')
+        f5 = gcurve(color=color.yellow, graph=g3, label='потенциаьная')
+        while sec<= time:
+            
+            
+                
+            
+            TexSx = label(text='Y: ' + str(sph.pos.y),
+                        pos=vector(-40, 20, 0), color=color.green)
+            TexSx = label(text='Перемещение OX равно: ' + str(sx),
+                        pos=vector(0, 20, 0), color=color.green)
+            TexSy = label(text='Перемещение OY равно: ' + str(sy),
+                        pos=vector(0, 40, 0), color=color.green)
+            Tex = label(text='Скорость: ' + str(curV),
+                        pos=vector(40, 20, 0), color=color.green)
+            Tex = label(text='Время двмжения: ' + str(sec),
+                        pos=vector(40, 40, 0), color=color.green)
+            rate(100)
+            vy = v0*sin(deg)
+            vx = v0*cos(deg)
+            #curV = vx+(vy-axe*sec)
+            curV = sqrt(vx**2 + (vy-axe*sec)**2)
+            
+            sec += 0.01
+            sy = vy*sec - axe * sec*sec/2
+            
+            sx = vx*sec
+            
+            
+            
+            
+            l = vector(sx,sy,0)
+                       
+    
+            sph.pos=sph.pos+l
+            f1.plot(sec, sx)
+            f6.plot(sec, sy)
+            f2.plot(sec, (vy - axe*sec))
+            f3.plot(sec, vx)
+            f4.plot(sec, sph.mass*(curV**2)/2)
+           
+            f5.plot(sec, sph.mass*axe*sy)
+            
+            if int(str(sph.pos.y)) < 0:
+                scene.camera.follow(None)
+                while int(str(sph.pos.y)) < 0:
+                    sph.pos.y = sph.pos.y + 1
+                    scene.camera.pos.y = scene.camera.pos.y+1
+                break
+            if fCount %2 ==0:
+                strBtn.text = 'Start'
+                break
+ 
+
+       
+        
+            
+    
